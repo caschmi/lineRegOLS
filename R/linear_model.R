@@ -145,7 +145,6 @@ linear_regression_ols = function(data, y, x,
 
   F_conclusion = paste("F-statistic: ", round(F_stat, 4), "on", p, "and", n-p-1, "DF", "p-value: ", round(F_p_value, 4))
 
-
   return(list(Residuals = fiveNumSumm[1,],
        Coefficients = Coefficients,
        Additional = c(resid_SS_output, R_2_conclusion, F_conclusion)))

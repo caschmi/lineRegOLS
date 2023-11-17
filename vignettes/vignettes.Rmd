@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 library(lineRegOLS)
 ```
 
-To use the function `lineRegOLS`, we must have sample data to test : 
+To use the function `linear_regression_ols`, we must have sample data to test. Below, I've simulated random sample data for exploratory purposes. The data is complete nonsense, but assume that it represents people's score on a test, and we want to determine if their age, typical performance status (high, medium, low), and gender has a statistics. 
 
 ```{r Simulated Data}
 set.seed(202311)
@@ -38,18 +38,15 @@ gender[gender == "1"] = "female"
 
 testGrades = data.frame(score, age, perf, gender)
 
-data = testGrades
-y = "score"
-x = c("age", "perf", "gender")
-reference_cat = "low"
-cat_coding = "reference"
 ```
 
-Now, to run the function: 
+To run the function, we specify the parameters, with y as the response variable and x the vector of covariates we want to regress. By default, all non-binary categorical variables are coded into dummy variables using reference cell coding with the first unique category used as the reference. \emph{If you have multiple non-binary categorical variables, do not specify a reference category.} If you want to use mean cell coding, change the cat_coding parameter. My design, the linear model will only do reference cell or mean cell coding. 
+
+At present, the function also cannot handle interaction terms. That is currently in development. See Version 1.1.
 
 ```{r Running the function}
 model = linear_regression_ols(data = testGrades, y = "score", 
-                      x = c("age", "perf", "gender"), reference_cat = "low")
+                      x = c("age", "perf", "gender"), reference_cat =  "low")
 
 model
 ```
