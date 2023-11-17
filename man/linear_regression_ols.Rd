@@ -30,6 +30,22 @@ Estimates of the linear regression coefficients, their standard errors, t-statis
 Estimates the coefficients of a linear model, including their standard errors, t-statistic, and corresponding p-value.
 }
 \examples{
+set.seed(202311)
+score = rnorm(1000, mean = 10, sd = 3)
+
+age = rnorm(1000, mean = 35, sd = 7.5)
+
+perf = round(runif(1000, 0, 2))
+perf[perf == 0] = "low"
+perf[perf == 1] = "medium"
+perf[perf == 2] = "high"
+
+gender = round(runif(1000, 0, 1))
+gender[gender == "0"] = "male"
+gender[gender == "1"] = "female"
+
+testGrades = data.frame(score, age, perf, gender)
+
 linear_regression_ols(data = testData, y = "score", x = c("age", "perf", "gender"), cat_coding = "means", reference_cat = NULL)
 linear_regression_ols(data = testData, y = "score", x = c("age", "perf", "gender"), reference_cat = "low")
 

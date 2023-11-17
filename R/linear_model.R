@@ -11,6 +11,22 @@
 #'@return Estimates of the linear regression coefficients, their standard errors, t-statistics, and two-sided p-values.
 #'
 #'@examples
+#'set.seed(202311)
+#'score = rnorm(1000, mean = 10, sd = 3)
+#'
+#'age = rnorm(1000, mean = 35, sd = 7.5)
+#'
+#'perf = round(runif(1000, 0, 2))
+#'perf[perf == 0] = "low"
+#'perf[perf == 1] = "medium"
+#'perf[perf == 2] = "high"
+#'
+#'gender = round(runif(1000, 0, 1))
+#'gender[gender == "0"] = "male"
+#'gender[gender == "1"] = "female"
+#'
+#'testGrades = data.frame(score, age, perf, gender)
+#'
 #'linear_regression_ols(data = testData, y = "score", x = c("age", "perf", "gender"), cat_coding = "means", reference_cat = NULL)
 #'linear_regression_ols(data = testData, y = "score", x = c("age", "perf", "gender"), reference_cat = "low")
 #'
@@ -68,7 +84,7 @@ linear_regression_ols = function(data, y, x,
         }
       }
 
-      covariate_data[, col] = NULL  # Remove the original column
+      covariate_data[, mcol] = NULL  # Remove the original column
       X = cbind(rep(1, length(response)), as.matrix(covariate_data))
 
     } else {
@@ -96,14 +112,42 @@ linear_regression_ols = function(data, y, x,
   sigma_sq_hat = as.numeric((t(epsilon_hat) %*% epsilon_hat) / (n - p))
 
   beta_est_vars = sigma_sq_hat * solve(t(X) %*% X)
-  std_errors = sqrt(diag(beta_est_vars))
+  beta_se = sqrt(diag(beta_est_vars))
 
   ### T-statistic ###
-
-  t_statistic = beta_hat / std_errors
+  t_statistic = beta_hat / beta_se
 
   ### P-values ###
   p_value = 2*(1 - pt(abs(t_statistic), n-p))
+  Coefficients = data.frame(beta_hat, beta_se, t_statistic, p_value)
 
-  data.frame(beta_hat, std_errors, t_statistic, p_value)
+  ### 5 Number Summary Residuals  ###
+  fiveNumSumm = t(data.frame(round(fivenum(epsilon_hat), 4)))
+  colnames(fiveNumSumm) <- c("Min", "Q2", "Median", "Q3", "Max")
+
+  ### Residual Standard Errors ###
+  resid_SS = sqrt(sum(epsilon_hat^2)/(n-p-1))
+  resid_SS_output = paste("Residual standard error:", round(resid_SS,6), "on", n-p-1, "degrees of freedom")
+
+  ### Multiple R-squared and Adjusted ###
+  SSY = sum((response-mean(response))^2)
+  SSE = sum(epsilon_hat^2)
+
+  R_2 = 1 - (SSE / SSY)
+  R_2_adjusted = 1 - ((1 - R_2) * (n - 1) / (n - p - 1))
+
+  R_2_conclusion = paste("Multiple R-squared: ", round(R_2, 6),
+                                                       ", Adjusted R-squared: ", round(R_2_adjusted, 6))
+
+  ### F-statistic
+  F_stat = ((SSY - SSE) / p) / (SSE / (n - p - 1))
+  F_p_value = 1 - pf(F_stat, p, n - p - 1)
+
+  F_conclusion = paste("F-statistic: ", round(F_stat, 4), "on", p, "and", n-p-1, "DF", "p-value: ", round(F_p_value, 4))
+
+
+  return(list(Residuals = fiveNumSumm[1,],
+       Coefficients = Coefficients,
+       Additional = c(resid_SS_output, R_2_conclusion, F_conclusion)))
+
 }

@@ -1,0 +1,81 @@
+---
+title: "vignettes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{vignettes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(lineRegOLS)
+```
+
+To use the function `lineRegOLS`, we must have sample data to test : 
+
+```{r Simulated Data}
+set.seed(202311)
+score = rnorm(1000, mean = 10, sd = 3)
+
+# Covariates
+age = rnorm(1000, mean = 35, sd = 7.5)
+
+perf = round(runif(1000, 0, 2))
+perf[perf == 0] = "low"
+perf[perf == 1] = "medium"
+perf[perf == 2] = "high"
+
+gender = round(runif(1000, 0, 1))
+gender[gender == "0"] = "male"
+gender[gender == "1"] = "female"
+
+testGrades = data.frame(score, age, perf, gender)
+
+data = testGrades
+y = "score"
+x = c("age", "perf", "gender")
+reference_cat = "low"
+cat_coding = "reference"
+```
+
+Now, to run the function: 
+
+```{r Running the function}
+model = linear_regression_ols(data = testGrades, y = "score", 
+                      x = c("age", "perf", "gender"), reference_cat = "low")
+
+model
+```
+
+Testing for equivalnce: 
+```{r Equivalence Test}
+testGrades$perf.f = factor(testGrades$perf, levels = c("medium", "high", "low"))
+compModel = lm(score~age+gender+perf.f, data = testGrades)
+compSummary = summary(compModel)
+
+all.equal(compModel, model)
+```
+Aside from a different data structures, I see that the only numerical difference between my function with the standard linear regression summary is in the calculation of the adjusted first and third quartiles for the residuals.  
+
+To compare my code to the standard in run-time: 
+```{r Benchmarking}
+library(rbenchmark)
+benchmark(myCode = linear_regression_ols(data = testGrades, y = "score", 
+                      x = c("age", "perf", "gender"), reference_cat = "low"), 
+          compCode = {
+            compModel = lm(score~age+gender+perf.f, data = testGrades)
+            summary(compModel)
+          }
+          )
+
+```
+Clearly, from the results above, my code runs less efficiently from the standard code. 
+
+
