@@ -4,32 +4,23 @@
 \alias{linear_regression_ols}
 \title{Linear Regression OLS}
 \usage{
-linear_regression_ols(
-  data,
-  y,
-  x,
-  cat_coding = "reference",
-  reference_cat = NULL
-)
+linear_regression_ols(formula, y, data)
 }
 \arguments{
-\item{data}{Data frame of data used.}
+\item{formula}{formula: describes the model to be fitted symbolically.}
 
-\item{y}{Character denoting the name of the column in data to be used as the response variable.}
+\item{y}{character denoting the name of the column in data to be used as the response variable.}
 
-\item{x}{Vector of characters denoting the columns in data to be used as the predictor variables. Can handle categorical variables.}
-
-\item{cat_coding}{Argument to set coding scheme to use in place of non-binary categorical covariates. Defaults to "reference" cell coding. Enter "means" for mean cell coding.}
-
-\item{reference_cat}{String argument to set reference category for categorical covariates. Defaults to first category in multi-level categorical covariates.}
+\item{data}{data frame of data to be used.}
 }
 \value{
-Estimates of the linear regression coefficients, their standard errors, t-statistics, and two-sided p-values.
+Returns estimates of the coefficients from a linear regression model, including their standard errors, t-statistics, and 2-sided p-values. This function also automatically outputs additional information such as a five number summary of the residuals, R-square and adjusted R-squared values, and an F-test,
 }
 \description{
 Estimates the coefficients of a linear model, including their standard errors, t-statistic, and corresponding p-value.
 }
 \examples{
+library(lineRegOLS)
 set.seed(202311)
 score = rnorm(1000, mean = 10, sd = 3)
 
@@ -44,9 +35,14 @@ gender = round(runif(1000, 0, 1))
 gender[gender == "0"] = "male"
 gender[gender == "1"] = "female"
 
-testGrades = data.frame(score, age, perf, gender)
+testNum = round(runif(1000, 0, 2))
+testNum[testNum == 0] = "one"
+testNum[testNum == 1] = "two"
+testNum[testNum == 2] = "three"
 
-linear_regression_ols(data = testData, y = "score", x = c("age", "perf", "gender"), cat_coding = "means", reference_cat = NULL)
-linear_regression_ols(data = testData, y = "score", x = c("age", "perf", "gender"), reference_cat = "low")
+testScores = data.frame(score, age, perf, gender, testNum)
+
+linear_regression_ols(score~age+gender+perf+testNum, y = "score", data = testScores)
+linear_regression_ols(score~-1+age+gender+perf+testNum, y = "score", data = testScores)
 
 }

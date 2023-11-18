@@ -32,47 +32,77 @@ perf[perf == 0] = "low"
 perf[perf == 1] = "medium"
 perf[perf == 2] = "high"
 
+
 gender = round(runif(1000, 0, 1))
 gender[gender == "0"] = "male"
 gender[gender == "1"] = "female"
 
-testGrades = data.frame(score, age, perf, gender)
+testNum = round(runif(1000, 0, 2))
+testNum[testNum == 0] = "one"
+testNum[testNum == 1] = "two"
+testNum[testNum == 2] = "three"
+
+testScores = data.frame(score, age, perf, gender, testNum)
 
 ```
 
-To run the function, we specify the parameters, with y as the response variable and x the vector of covariates we want to regress. By default, all non-binary categorical variables are coded into dummy variables using reference cell coding with the first unique category used as the reference. \emph{If you have multiple non-binary categorical variables, do not specify a reference category.} If you want to use mean cell coding, change the cat_coding parameter. My design, the linear model will only do reference cell or mean cell coding. 
+To run the function, specify the parameters as follows. Assuming we want to use all the variables, and assuming that "score" is our response of interest: 
 
-At present, the function also cannot handle interaction terms. That is currently in development. See Version 1.1.
+formula = score ~ age + gender + perf + testNum
+y = "score"
+data = testScores
+
+We can also change from reference cell coding to mean cell coding by writing -1 after the ~ in the formula: 
+
+formula = score ~ -1 + age + gender + perf + testNum
+
+Lastly, this function can also handle interaction terms between covariates be multiplying (*) the variables together: 
+
+formula = score ~ age + gender + perf +testNum + perf*testNum
+
+Below are examples of the outputs of the examples above. 
 
 ```{r Running the function}
-model = linear_regression_ols(data = testGrades, y = "score", 
-                      x = c("age", "perf", "gender"), reference_cat =  "low")
+model1 = linear_regression_ols(formula = score ~ age + gender + perf + testNum,
+                               y = "score", 
+                               data = testScores); model1
 
-model
+model2 = linear_regression_ols(formula = score ~ -1 + age + gender + perf + testNum,
+                               y = "score", 
+                               data = testScores); model2
+
+model3 = linear_regression_ols(formula = score ~ age + gender + perf + testNum + perf*testNum,
+                               y = "score", 
+                               data = testScores); model3
 ```
 
 Testing for equivalnce: 
 ```{r Equivalence Test}
-testGrades$perf.f = factor(testGrades$perf, levels = c("medium", "high", "low"))
-compModel = lm(score~age+gender+perf.f, data = testGrades)
+compModel = lm(score~age+gender+perf+testNum, data = testScores)
 compSummary = summary(compModel)
 
-all.equal(compModel, model)
+# Comparing five number summaries 
+compFiveNum = round(fivenum(compModel$residuals), 4)
+all.equal(model$Residuals, compFiveNum, tolerance = 1e-5)
+
+# Comparing columns for the coefficients 
+all.equal(compSummary$coefficients[,1], model$Coefficients[,1], tolerance = 1e-4)
+all.equal(compSummary$coefficients[,2], model$Coefficients[,2], tolerance = 1e-4)
+all.equal(compSummary$coefficients[,3], model$Coefficients[,3], tolerance = 1e-4)
+all.equal(compSummary$coefficients[,4], model$Coefficients[,4], tolerance = 1e-4)
+
 ```
-Aside from a different data structures, I see that the only numerical difference between my function with the standard linear regression summary is in the calculation of the adjusted first and third quartiles for the residuals.  
+Aside from a different data structures, I see that the only numerical difference between my function with the standard linear regression summary is in the the p-values. Aside from that, I there doesn't appear to be any other differences. 
 
 To compare my code to the standard in run-time: 
 ```{r Benchmarking}
 library(rbenchmark)
-benchmark(myCode = linear_regression_ols(data = testGrades, y = "score", 
-                      x = c("age", "perf", "gender"), reference_cat = "low"), 
-          compCode = {
-            compModel = lm(score~age+gender+perf.f, data = testGrades)
-            summary(compModel)
-          }
+benchmark(myCode = linear_regression_ols(score~age+gender+perf+testNum, y = "score", data = testScores), 
+          compCode = summary(lm(score~age+gender+perf+testNum, data = testScores))
           )
 
 ```
-Clearly, from the results above, my code runs less efficiently from the standard code. 
+Clearly, from the results above, my code runs less efficiently from the standard code. I used this code instead of bench::mark because of the slight differences in my code from the comparison case. 
+
 
 
