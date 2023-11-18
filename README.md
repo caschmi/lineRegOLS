@@ -15,8 +15,7 @@ To install `lineRegOLS`:
 5. To run in R, use the function `linear_regression_ols`
 
 ## Usage 
-Below are two captures from R illustration the function formulation and corresponding output. The data set used in this example is simulated, with score and age as continous, gender is binary, and perf and testNum as three-level-categorical variables. 
-
+Below are two captures from R to illustrate the function formulation and corresponding output. The data set used in this example is simulated, with score and age as continous, gender as binary, and perf and testNum as three-level-categorical variables. 
 
 <img width="634" alt="linearModelFormulation" src="https://github.com/caschmi/lineRegOLS/assets/148912328/ae94027d-477a-4439-a723-8d4c65fe6144">
 
