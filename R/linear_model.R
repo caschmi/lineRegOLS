@@ -44,7 +44,7 @@ linear_regression_ols = function(formula, y, data){
 
   ### Estimates
 
-  beta_hat = round(solve(t(X) %*% X) %*% t(X) %*% Y, 6)
+  beta_hat = solve(t(X) %*% X) %*% t(X) %*% Y
 
   ### Standard errors ###
 
@@ -60,11 +60,11 @@ linear_regression_ols = function(formula, y, data){
 
   ### T-statistic ###
 
-  t_statistic = round(beta_hat / std_errors, 3)
+  t_statistic = beta_hat / std_errors
 
   ### P-values ###
-  p_value = round(2*(1 - pt(abs(t_statistic), n-p)), 3)
-  Coefficients = data.frame(beta_hat, std_errors, t_statistic, p_value)
+  p_value = 2*(1 - pt(abs(t_statistic), n-p))
+  Coefficients = data.frame(round(beta_hat, 6), round(std_errors,6), round(t_statistic, 4), round(p_value, 4))
   colnames(Coefficients) = c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
 
   ### Five number sumamry of

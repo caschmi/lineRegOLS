@@ -63,9 +63,9 @@ formula = score ~ age + gender + perf +testNum + perf*testNum
 Below are examples of the outputs of the examples above. 
 
 ```{r Running the function}
-model1 = linear_regression_ols(formula = score ~ age + gender + perf + testNum,
+model = linear_regression_ols(formula = score ~ age + gender + perf + testNum,
                                y = "score", 
-                               data = testScores); model1
+                               data = testScores); model
 
 model2 = linear_regression_ols(formula = score ~ -1 + age + gender + perf + testNum,
                                y = "score", 
@@ -106,3 +106,7 @@ Clearly, from the results above, my code runs less efficiently from the standard
 
 
 
+install.packages("devtools")
+library(devtools)
+devtools::install_github(“caschmi/lineRegOLS”)
+library(lineRegOLS)
