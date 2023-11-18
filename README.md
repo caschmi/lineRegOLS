@@ -24,5 +24,5 @@ Below are two captures from R illustration the function formulation and correspo
 
 The idea was to emulated the output of the summary() table available in R. 
 
-## 4. Authors 
+## Author
 Casey Schmidt (caschmi@umich.edu)
